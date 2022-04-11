@@ -60,11 +60,16 @@ Node* find(Node* root, char* value, errors_t* error)
 }
 
 
-//is_left == 1 if it is left child and 0 if a right child
-Node* add_elem_after(Tree* info, Node* after, char* value, errors_t* error, int level, int is_left)  //if after == NULL then it is a top elem
+Node* add_elem_after(Tree* info, Node* after, char* value, errors_t* error, int level)  //if after == NULL then it is a top elem
 {
 	if(!error || !info)
 		return NULL;
+
+	if(!after)
+	{
+		*error = AFTER_NULL_ELEM;
+		return NULL;
+	}
 
 	if(!value)
 	{
@@ -92,21 +97,42 @@ Node* add_elem_after(Tree* info, Node* after, char* value, errors_t* error, int 
 	new_node->left = NULL;
 	new_node->right = NULL;
 
-	if(!after)
+	/*if(!after)
 	{
 		info->root = new_node;
 		new_node->parent = NULL;
+
 		if(is_left)
 			after->left = new_node;
 		else
 			after->right = new_node;
 	}
-	else
-		new_node->parent = after;
+	else*/
+	new_node->parent = after;
 
 	++info->size;
 
 	return new_node;
+}
+
+Node* make_tree_from_base(int level, Node* after, errors_t* error, FILE* file_with_base)
+{
+	char c = fgetc(file_with_base);
+	if(c == '{')
+	{
+		char* buffer = (char*)malloc(sizeof(char) * 100);
+		fscanf(file_with_base,"%s", buffer);
+		if(buffer[strlen(buffer) - 1] == '}')
+		{
+			buffer[strlen(buffer) - 1] = '\0';
+			add_elem_after(info, after, buffer, error, level);
+		}
+		else
+		{
+			after->left = make_tree_from_base(level + 1, after, error, file_with_base);
+			after->right = make_tree_from_base(level + 1, after, error, file_with_base);
+		}
+	}
 }
 
 //firstly after = NULL, save_tree != NULL, level == 1
@@ -115,22 +141,30 @@ int read_base(Tree* save_tree, int level, Node* after, errors_t* error)
 	if(!save_tree || !save_tree->file_with_base)
 		return BAD_PTR;
 
-	char c = fgetc(save_tree->file_with_base);
-	if(c == '{')
+	FILE* file_with_base = fopen("base_akin.txt");
+
+
+	fseek(file_with_base, 0, SEEK_SET);
+
+	size_t size = ftell(file_with_base);
+
+	char* buffer = calloc(size + 1, sizeof(char));
+
+	fread(buffer, sizeof(char), size, file_with_base);
+
+	fclose(file_with_base);/**/
+
+	Node* empty_elem = (Node*)calloc(1, sizeof(Node));
+	if(!empty_elem)
 	{
-		char* buffer = (char*)malloc(sizeof(char) * 100);
-		fscanf(save_tree->file_with_base,"%s", buffer);
-		if(buffer[strlen(buffer) - 1] == '}')
-		{
-			add_elem_after(info, after, buffer, error, level, 0);
-		}
-		else
-		{
-			create_new_node();
-
-
-		}
+		*error = NO_MEMORY;
+		return 1;
 	}
+
+	make_tree_from_base(1, empty_elem, error, file_with_base, 0);
+
+	fclose(file_with_base);
+	
 	if(level == 1)
 	{
 		//create_tree

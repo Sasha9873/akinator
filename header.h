@@ -1,4 +1,6 @@
-#include <cstdio>
+#pragma once
+
+#include <stdio.h>
 #include <cstdlib>
 #include <cstring>
 
