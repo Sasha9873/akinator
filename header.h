@@ -1,34 +1,26 @@
 #pragma once
 
-#include <stdio.h>
-#include <cstdlib>
-#include <cstring>
+// guess object
+errors_t guess(Node* node);
 
-typedef struct node
-{
-	size_t level = 0;
-	char* data;
-	struct node* parent = NULL;
-	struct node* left = NULL;
-	struct node* right = NULL;
+// add new elem in base if he was not in base in this pkace yet
+errors_t add_new_elem_in_base(Node* node);
 
-} Node;
+errors_t delete_tree(Tree** tree);
+int tree_dump(Tree* tree, errors_t reason);
+errors_t file_print_tree(FILE* fp, Node* node, int n);
 
-typedef struct tree{
-	Node* root = NULL;
-	//size_t k_levels = 0;
-	size_t size = 0;
-	//size_t max_data_size = 100;
-	FILE* file_with_base;
+// make graph.txt file to we can make png file next with our tree
+int print_graph(Tree* tree);
+errors_t print_tree(Node* node, int n);
 
-} Tree;
+/*	reads akin_base 
+	firstly after == NULL, save_tree != NULL(already is created), level == 1*/
+void read_base(Tree* save_tree, int level, Node* after, errors_t* error);
 
-typedef enum errors{
-    ALL_OK           =  0,
-    NO_MEMORY        = -1,
-    AFTER_NULL_ELEM  = -2,
-    NULL_ELEM 	     = -3,
-    NULL_FILE        = -4,
-    NO_TREE			 = -5,
-    BAD_PTR			 = -6,
-}errors_t;
+Node* add_elem_after(Tree* info, Node* after, char* value, errors_t* error, int level);
+Node* find(Node* root, char* value, errors_t* error);
+
+Tree* create_tree(errors_t* error);
+
+errors_t define_object(Node* root);

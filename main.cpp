@@ -1,31 +1,46 @@
+#include "tree_header.h"
 #include "header.h"
 
 int main()
 {
-	char str[100];
-	scanf("%s", str);
-	printf("%c %c", str[strlen(str)], str[strlen(str) - 1]);
-	/*errors_t error = ALL_OK;
+	errors_t error = ALL_OK;
 	Tree* new_tree = create_tree(&error);
-	add_elem(new_tree, 5, &error);	
+
+
+	fseek(new_tree->file_with_base, 0, SEEK_END);
+
+	size_t size = ftell(new_tree->file_with_base);
+	printf("size1 = %ld\n", size);
+
+	fseek(new_tree->file_with_base, 0, SEEK_SET);
+
+	read_base(new_tree, 1, NULL, &error);
+
+	int enter;
+	scanf("%d", &enter);
+
+	while(enter)
+	{
+		if(enter == 1)
+			guess(new_tree->root);
+		else if(enter == 2)
+			define_object(new_tree->root);
+
+		scanf("%d", &enter);
+	}
+
+    //change old bas to new one
+	fclose(new_tree->file_with_base);
+	new_tree->file_with_base = fopen("base_akin.txt", "w");
+
+	file_print_tree(new_tree->file_with_base, new_tree->root, 0);
+
+
 	print_tree(new_tree->root, 0);
-
-	add_elem(new_tree, 9, &error);
-	add_elem(new_tree, 1, &error);
-	print_tree(new_tree->root, 0);
-
-	add_elem(new_tree, 10, &error);
-	add_elem(new_tree, 7, &error);
-	add_elem(new_tree, 6, &error);
-	add_elem(new_tree, 8, &error);
-
-
-	Node* ptr = find(new_tree->root, 10);
-	printf("%p %d\n", ptr, ptr->data);
-
-	FILE* fp = fopen("base_akin.txt", "w+");
-	file_print_tree(fp, new_tree->root, 0);
-	print_tree(new_tree->root, 0);*/
+	print_graph(new_tree);
+	DUMP(ALL_OK);
+	delete_tree(&new_tree);
+	tree_dump(new_tree, ALL_OK);
 
 	return 0;
 }

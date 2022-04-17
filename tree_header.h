@@ -4,6 +4,13 @@
 #include <cstdlib>
 #include <cstring>
 
+#include "stack.h"
+
+
+#define DUMP(reason)\
+    fprintf(new_tree->logs, "Called from %s() at %s(%d),\n", __FUNCTION__, __FILE__, __LINE__);\
+    tree_dump(new_tree, reason);\
+
 typedef struct node
 {
 	size_t level = 0;
@@ -23,6 +30,7 @@ typedef struct tree{
 	FILE* graph = NULL;
 
 } Tree;
+
 
 static const int MAX_STR_LEN = 100;
 
@@ -49,3 +57,6 @@ typedef enum errors{
     NULL_ELEM 		 = -7,
     AFTER_NULL_ELEM	 = -8,
 }errors_t;
+
+
+Node* find(Node* root, char* value, errors_t* error);

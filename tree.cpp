@@ -46,25 +46,12 @@ Tree* create_tree(errors_t* error)
 	return new_tree;
 }
 
-/*Node* find(Node* root, int value)
-{
-	Node* node = root;
-	while(node)
-	{
-		if(node->data == value)
-			return node;
-		if(value > node->data)
-			node = node->right;
-		else
-			node = node->left;
-	}
-	return NULL;
-}*/
-
 errors_t recursion_find(Node* root, char* value, Node** ans)
 {
-	if(!root)
+	if(!root || !root->data || !value || !ans)
+	{
 		return BAD_PTR;
+	}
 
 	Node* node = root;
 	if(!strcmp(node->data, value))
@@ -74,9 +61,9 @@ errors_t recursion_find(Node* root, char* value, Node** ans)
 	}
 
 	if(node->left)
-		return recursion_find(node->left, value, ans);
+		recursion_find(node->left, value, ans);
 	if(node->right)
-		return recursion_find(node->right, value, ans);
+		recursion_find(node->right, value, ans);
 
 	return ALL_OK;
 }
@@ -102,7 +89,7 @@ Node* find(Node* root, char* value, errors_t* error)
 
 
 //Node* add_elem_after(Tree* info, Node* after, char* value, errors_t* error, int level)  //if after == NULL then it is a top elem
-Node* add_elem_after(Tree* info, Node* after, char* value, errors_t* error, int level)  //if after == NULL then it is a top elem
+Node* add_elem_after(Tree* info, Node* after, char* value, errors_t* error, int level)  
 {
 	if(!error || !info)
 		return NULL;
@@ -227,10 +214,13 @@ Node* make_tree_from_base(Tree* info, int level, Node* after, errors_t* error, c
 }
 
 //firstly after = NULL, save_tree != NULL, level == 1
-int read_base(Tree* save_tree, int level, Node* after, errors_t* error)
+void read_base(Tree* save_tree, int level, Node* after, errors_t* error)
 {
 	if(!save_tree || !save_tree->file_with_base)
-		return BAD_PTR;
+	{
+		*error = BAD_PTR;
+		return;
+	}
 
 
 	fseek(save_tree->file_with_base, 0, SEEK_END);
@@ -249,7 +239,7 @@ int read_base(Tree* save_tree, int level, Node* after, errors_t* error)
 		if(!empty_elem)
 		{
 			*error = NO_MEMORY;
-			return 1;
+			return;
 		}
 
 		int position = 0;
@@ -265,96 +255,7 @@ int read_base(Tree* save_tree, int level, Node* after, errors_t* error)
 		after->left = make_tree_from_base(save_tree, level, after, error, buffer, &position);
 	}
 
-	return ALL_OK;
 }
-
-/*
-Node* add_elem(Tree* info, int value, errors_t* error)
-{
-	if(!info)
-	{
-		*error = NO_TREE;
-		return NULL;
-	}
-
-	Node* root = info->root;
-
-	if(!root)
-	{
-		info->root = (Node*)malloc(sizeof(Node));
-		printf("%p\n", info->root);
-		if(!info->root)
-		{
-			*error = NO_MEMORY;
-			return NULL;
-		}
-		info->root->level = 1;
-		info->root->left = NULL;
-		info->root->right = NULL;
-		info->root->parent = NULL;
-		info->root->data = value;
-
-		printf("data = %d\n", info->root->data); 
-
-		++info->size;
-
-		return root;
-	}
-
-	Node* node = root;
-
-	while(node)
-	{
-		if(value > node->data)
-		{
-			if(node->right)
-				node = node->right;
-			else
-			{
-				node->right = (Node*)malloc(sizeof(Node));
-				if(!node->right)
-				{
-					*error = NO_MEMORY;
-					return NULL;
-				}
-				node->right->level = node->level + 1;
-				node->right->left = NULL;
-				node->right->right = NULL;
-				node->right->parent = node;
-				node->right->data = value;
-				
-				++info->size;
-
-				return node->right;
-			}
-		}
-		else
-		{
-			if(node->left)
-				node = node->left;
-			else
-			{
-				node->left = (Node*)malloc(sizeof(Node));
-				if(!node->left)
-				{
-					*error = NO_MEMORY;
-					return NULL;
-				}
-				node->left->level = node->level + 1;
-				node->left->left = NULL;
-				node->left->right = NULL;
-				node->left->parent = node;
-				node->left->data = value;
-
-				++info->size;
-
-				return node->left;
-			}
-		}
-	}
-
-	return NULL;
-}*/
 
 // (n - 1 ) - amount of ' '
 errors_t print_tree(Node* node, int n)
@@ -504,44 +405,41 @@ int tree_dump(Tree* tree, errors_t reason)
     return ALL_OK;
 }
 
-
-
-int main()
+void delete_node(Node* node)
 {
-	errors_t error = ALL_OK;
-	Tree* new_tree = create_tree(&error);
+	if(!node)
+		return;
 
+	if(node->left)
+		delete_node(node->left);
+	
+	if(node->right)
+		delete_node(node->right);
 
-	fseek(new_tree->file_with_base, 0, SEEK_END);
+	if(node->data)
+	{
+		free(node->data);
+		node->data = NULL;
+	}
 
-	size_t size = ftell(new_tree->file_with_base);
-	printf("size1 = %ld\n", size);
-
-	fseek(new_tree->file_with_base, 0, SEEK_SET);
-
-
-	read_base(new_tree, 1, NULL, &error);
-	/*add_elem(new_tree, 5, &error);	
-	print_tree(new_tree->root, 0);
-
-	add_elem(new_tree, 9, &error);
-	add_elem(new_tree, 1, &error);
-	print_tree(new_tree->root, 0);
-
-	add_elem(new_tree, 10, &error);
-	add_elem(new_tree, 7, &error);
-	add_elem(new_tree, 6, &error);
-	add_elem(new_tree, 8, &error);
-
-
-	Node* ptr = find(new_tree->root, 10);
-	printf("%p %d\n", ptr, ptr->data);
-
-	FILE* fp = fopen("1.txt", "r");*/
-	file_print_tree(new_tree->file_with_base, new_tree->root, 0);
-	print_tree(new_tree->root, 0);
-	print_graph(new_tree);
-	tree_dump(new_tree, ALL_OK);
-
-	return 0;
+	free(node);
+	node = NULL;
 }
+
+errors_t delete_tree(Tree** tree)
+{
+	if(!tree || !*tree)
+		return BAD_PTR;
+
+	delete_node((*tree)->root);
+
+	fclose((*tree)->file_with_base);
+	fclose((*tree)->graph);
+	fclose((*tree)->logs);
+
+	free(*tree);
+	*tree = NULL;
+
+	return ALL_OK;
+}
+

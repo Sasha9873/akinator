@@ -1,14 +1,18 @@
 
-{5
-  {1}
+{animal?
+  {small?
+     {mouse}
 
-  {9
-     {7
-        {hi}
+     {1,5}
+  }
 
-        {8}
+  {bad?
+     {small?
+        {Karabas Barabas}
+
+        {Rumpelstiltskin}
      }
 
-     {1000}
+     {Kolobok}
   }
 }

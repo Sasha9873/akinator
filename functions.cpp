@@ -1,341 +1,226 @@
-#include "header.h"
+#include "tree_header.h"
+#include <locale.h>
 
-Tree* create_tree(errors_t* error)
+errors_t add_new_elem_in_base(Node* node);
+
+errors_t guess(Node* node)
 {
-	Tree* new_tree = (Tree*)malloc(sizeof(Tree));
-	if(!new_tree)
-	{
-		*error = NO_MEMORY;
-		return NULL;
-	}
-	new_tree->root = NULL;
-	/*new_tree->root = (Node*)malloc(sizeof(Node));
-	if(!new_tree->root)
-	{
-		free(new_tree);
-		new_tree = NULL;
-		*error = NO_MEMORY;
-		return NULL;
-	}	*/
-	new_tree->size = 0;
-
-	return new_tree;
-}
-
-errors_t recursion_find(Node* root, char* value, Node** ans)
-{
-	if(!root)
+	if(!node)
 		return BAD_PTR;
 
-	Node* node = root;
-	if(!strcmp(node->data, value))
+	if(node->left && node->right)
 	{
-		*ans = node;
-		return ALL_OK
-	}
+		printf("Is it %s Please enter yes or no:\n", node->data);
+		char answer[10];
+		scanf("%s", answer);
 
-	if(node->left)
-		return recursion_find(node->left, value, ans);
-	if(node->right)
-		return recursion_find(node->right, value, ans);
+		if(strcmp(answer, "yes") == 0 || strcmp(answer, "Yes") == 0 || strcmp(answer, "YES") == 0)   //yes
+		{
+			guess(node->left);
+		}
+		else   //no
+		{
+			guess(node->right);
+		}
+	}
+	else
+	{
+		printf("You meaned %s?\n", node->data);
+		char answer[10];
+		scanf("%s", answer);
+		if(strcmp(answer, "yes") == 0 || strcmp(answer, "Yes") == 0 || strcmp(answer, "YES") == 0)   //yes
+		{
+			printf("Ha! Ha! Ha! I have won again:)\n");
+		}
+		else   //no
+			add_new_elem_in_base(node);
+	}
+	return ALL_OK;
 }
 
-Node* find(Node* root, char* value, errors_t* error)
+char* get_str(int* len)
 {
-	Node** node = (Node**)malloc(sizeof(Node*));
-	if(!node)
-	{
-		*error = NO_MEMORY;
+	int index = 0;
+	char c;
+	char* str = (char*)malloc(sizeof(char) * (MAX_STR_LEN + 1));
+	if(!str)
 		return NULL;
-	}
-	
-	*node = NULL;
 
-	if(*error = recursion_find(root, value, node))
-	{
-		return NULL;
-	}
+	while((c = getchar()) == '\n' || c == ' ')
+		;
+
+	str[index] = c;
+	++index;
 	
-	return *node;
+	while(index < MAX_STR_LEN && (c = getchar()) != '\n')
+	{
+		str[index] = c;
+		++index;
+	}
+	str[index] = '\0';
+
+	str = (char*)realloc(str, *len + 2);
+	*len = index;
+	return str;
 }
 
-
-Node* add_elem_after(Tree* info, Node* after, char* value, errors_t* error, int level)  //if after == NULL then it is a top elem
+errors_t add_new_elem_in_base(Node* node)
 {
-	if(!error || !info)
-		return NULL;
+	printf("Oh, I have missed. Please enter you object\n");
 
-	if(!after)
+	int len;
+	char* new_object = get_str(&len);
+	if(!new_object)
+		return NO_MEMORY;
+
+	printf("What thing %s is different from %s, it...?\n", new_object, node->data);
+
+	//char* difference = (char*)malloc(sizeof(char) * (MAX_STR_LEN + 2));
+	
+	len = 0;
+	char* difference = get_str(&len);
+	if(!difference)
+		return NO_MEMORY;
+
+	printf("len = %d", len);
+	difference[len] = '?';
+	difference[len + 1] = '\0';
+
+	difference = (char*)realloc(difference, len + 2);
+	if(!difference)
+		return NO_MEMORY;
+
+	Node* new_difference = (Node*)malloc(sizeof(Node));
+	if(!new_difference)
 	{
-		*error = AFTER_NULL_ELEM;
-		return NULL;
+		free(difference);
+		return NO_MEMORY;
 	}
 
-	if(!value)
+	new_difference->data = difference;
+	new_difference->level = node->level;
+	if(node->parent)
 	{
-		*error = NULL_ELEM;
-		return NULL;
+		if(node->parent->left == node)
+			node->parent->left = new_difference;
+		else
+			node->parent->right = new_difference;
 	}
+
+	new_difference->right = node;
+	node->parent = new_difference;
+	++node->level;
+
 
 	Node* new_node = (Node*)malloc(sizeof(Node));
 	if(!new_node)
-	{
-		*error = NO_MEMORY;
-		return NULL;
-	}
+		return NO_MEMORY;
 
-	new_node->data = (char*)calloc(sizeof(char), strlen(value) + 1);
-	if(!new_node->data)
-	{
-		free(new_node);
-		*error = NO_MEMORY;
-		return NULL;
-	}
-	strcpy(new_node->data, value);
+	new_difference->left = new_node;
 
-	new_node->level = level;
+	new_node->parent = new_difference;
+	new_node->data = new_object;
+	new_node->level = node->level;
 	new_node->left = NULL;
 	new_node->right = NULL;
 
-	/*if(!after)
-	{
-		info->root = new_node;
-		new_node->parent = NULL;
-
-		if(is_left)
-			after->left = new_node;
-		else
-			after->right = new_node;
-	}
-	else*/
-	new_node->parent = after;
-
-	++info->size;
-
-	return new_node;
+	return ALL_OK;
 }
 
-Node* make_tree_from_base(int level, Node* after, errors_t* error, FILE* file_with_base)
+void fill_stack(Stack* stk, Node* node)
 {
-	char c = fgetc(file_with_base);
-	if(c == '{')
+	if(node)
 	{
-		char* buffer = (char*)malloc(sizeof(char) * 100);
-		fscanf(file_with_base,"%s", buffer);
-		if(buffer[strlen(buffer) - 1] == '}')
-		{
-			buffer[strlen(buffer) - 1] = '\0';
-			add_elem_after(info, after, buffer, error, level);
-		}
-		else
-		{
-			after->left = make_tree_from_base(level + 1, after, error, file_with_base);
-			after->right = make_tree_from_base(level + 1, after, error, file_with_base);
-		}
+		stack_push(stk, node);
+		fill_stack(stk, node->parent);
 	}
+
 }
 
-//firstly after = NULL, save_tree != NULL, level == 1
-int read_base(Tree* save_tree, int level, Node* after, errors_t* error)
+Stack* make_define_stack(Node* object)
 {
-	if(!save_tree || !save_tree->file_with_base)
-		return BAD_PTR;
+	errors_t error;
 
-	FILE* file_with_base = fopen("base_akin.txt");
-
-
-	fseek(file_with_base, 0, SEEK_SET);
-
-	size_t size = ftell(file_with_base);
-
-	char* buffer = calloc(size + 1, sizeof(char));
-
-	fread(buffer, sizeof(char), size, file_with_base);
-
-	fclose(file_with_base);/**/
-
-	Node* empty_elem = (Node*)calloc(1, sizeof(Node));
-	if(!empty_elem)
-	{
-		*error = NO_MEMORY;
-		return 1;
-	}
-
-	make_tree_from_base(1, empty_elem, error, file_with_base, 0);
-
-	fclose(file_with_base);
-	
-	if(level == 1)
-	{
-		//create_tree
-		save_tree = (Tree*)malloc(sizeof(Tree));
-		if(!save_tree)
-			return NO_MEMORY;
-		save_tree->root = (Node*)malloc(sizeof(Node));
-		if(!save_tree->root)
-		{
-			free(save_tree);
-			return NO_MEMORY;
-		}
-		save_tree->root->parent = NULL;
-		save_tree->root->left = NULL;
-		save_tree->root->right = NULL;
-		save_tree->root->level = 1;
-
-		save_tree->root->data = (char*)malloc(sizeof(char)*(strlen(str) + 1));
-		if(!save_tree->root->data)
-		{
-			free(save_tree->root);
-			free(save_tree);
-			return NO_MEMORY;
-		}
-		strcpy(save_tree->root->data, str, strlen(str));
-		++save_tree->size;
-	}
-	else
-	{
-
-	}
-}
-
-Node* add_elem(Tree* info, char* value, errors_t* error)
-{
-	if(!info)
-	{
-		*error = NO_TREE;
+	Stack* stk = stack_new(sizeof(Node));
+	if(!stk)
 		return NULL;
-	}
 
-	Node* root = info->root;
+	fill_stack(stk, object);
 
-	if(!root)
-	{
-		printf("aaa\n");
-		info->root = (Node*)malloc(sizeof(Node));
-		printf("%p\n", info->root);
-		if(!info->root)
-		{
-			*error = NO_MEMORY;
-			return NULL;
-		}
-		info->root->level = 1;
-		info->root->left = NULL;
-		info->root->right = NULL;
-		info->root->parent = NULL;
-
-		info->root->data = (char*)malloc(sizeof(char)*strlen(value));
-		if(!info->root->data)
-		{
-			free(info->root);
-			*error = NO_MEMORY;
-			return NULL;
-		}
-		printf("data = %s\n", info->root->data);
-
-		++info->size;
-
-		return root;
-	}
-
-	Node* node = root;
-
-	while(node)
-	{
-		if(value > node->data)
-		{
-			if(node->right)
-				node = node->right;
-			else
-			{
-				node->right = (Node*)malloc(sizeof(Node));
-				if(!node->right)
-				{
-					*error = NO_MEMORY;
-					return NULL;
-				}
-				node->right->level = node->level + 1;
-				node->right->left = NULL;
-				node->right->right = NULL;
-				node->right->parent = node;
-				node->right->data = value;
-				
-				++info->size;
-
-				return node->right;
-			}
-		}
-		else
-		{
-			if(node->left)
-				node = node->left;
-			else
-			{
-				node->left = (Node*)malloc(sizeof(Node));
-				if(!node->left)
-				{
-					*error = NO_MEMORY;
-					return NULL;
-				}
-				node->left->level = node->level + 1;
-				node->left->left = NULL;
-				node->left->right = NULL;
-				node->left->parent = node;
-				node->left->data = value;
-
-				++info->size;
-
-				return node->left;
-			}
-		}
-	}
-
-	return NULL;
+	return stk;
 }
 
-errors_t print_tree(Node* node, int n)
+errors_t print_definition(Stack* stk)
 {
-	if(!node)
-	{
-		printf("{}\n");
+	if(!stk)
 		return BAD_PTR;
+	
+	Node* new_node = (Node*)malloc(sizeof(Node));
+	if(!new_node)
+		return NO_MEMORY;
+
+	printf("It is ");
+
+	while(stk->current_size)
+	{
+		stack_pop(stk, new_node);
+		if(new_node)
+		{
+			//printf("1 %s\n", new_node->data);
+			char* str = (char*)malloc(sizeof(char) * (strlen(new_node->data) + 1));
+			memcpy(str, new_node->data, strlen(new_node->data) + 1);
+
+			str[strlen(str) - 1] = '\0';    // delete '?'
+
+			if(stk->current_size == 1)
+				printf("%s and ", str);
+
+			else if(stk->current_size)
+				printf("%s, ", str);
+
+			else
+				printf("%s\n", str);
+
+			free(str);
+		}
 	}
-
-	printf("\n%*s", n, "{");
-
-	printf("%s", node->data);
-	if(node->left)
-		print_tree(node->left, n + 3);
-	if(node->right)
-		print_tree(node->right, n + 3);
-
-	if(node->right || node->left)
-		printf("%*s\n", n, "}");
-	else
-		printf("%s\n", "}");
 
 	return ALL_OK;
 }
 
-errors_t file_print_tree(FILE* fp, Node* node, int n)
+errors_t define_object(Node* root)
 {
-	if(!node)
+	int len;
+	char* value = get_str(&len);
+	errors_t error;
+	//printf("111 %d %s\n", len, value);
+
+	Node* object = find(root, value, &error);
+	if(!object)
+		printf("Do not have such object\n");
+	else
 	{
-		fprintf(fp, "{}\n");
-		return BAD_PTR;
+		Stack* stk = make_define_stack(object);
+		print_definition(stk);
 	}
 
-	fprintf(fp, "\n%*s", n, "{");
+	return error;
+}
 
-	fprintf(fp, "%s", node->data);
-	if(node->left)
-		file_print_tree(fp, node->left, n + 3);
-	if(node->right)
-		file_print_tree(fp, node->right, n + 3);
+errors_t compare_objects(Node* root)
+{
+	int len;
+	char* value = get_str(&len);
+	errors_t error;
 
-	if(node->right || node->left)
-		fprintf(fp, "%*s\n", n, "}");
+	Node* object = find(root, value, &error);
+	if(!object)
+		printf("Do not have such object\n");
 	else
-		fprintf(fp, "%s\n", "}");
+	{
+		Stack* stk = make_define_stack(object);
+		print_definition(stk);
+	}
 
-	return ALL_OK;
+	return error;
 }
