@@ -46,7 +46,7 @@ Tree* create_tree(errors_t* error)
 	return new_tree;
 }
 
-Node* find(Node* root, int value)
+/*Node* find(Node* root, int value)
 {
 	Node* node = root;
 	while(node)
@@ -59,7 +59,7 @@ Node* find(Node* root, int value)
 			node = node->left;
 	}
 	return NULL;
-}
+}*/
 
 errors_t recursion_find(Node* root, char* value, Node** ans)
 {
@@ -67,8 +67,7 @@ errors_t recursion_find(Node* root, char* value, Node** ans)
 		return BAD_PTR;
 
 	Node* node = root;
-	//if(!strcmp(node->data, value))
-	if(node->data, value)
+	if(!strcmp(node->data, value))
 	{
 		*ans = node;
 		return ALL_OK;
@@ -103,7 +102,7 @@ Node* find(Node* root, char* value, errors_t* error)
 
 
 //Node* add_elem_after(Tree* info, Node* after, char* value, errors_t* error, int level)  //if after == NULL then it is a top elem
-Node* add_elem_after(Tree* info, Node* after, int value, errors_t* error, int level)  //if after == NULL then it is a top elem
+Node* add_elem_after(Tree* info, Node* after, char* value, errors_t* error, int level)  //if after == NULL then it is a top elem
 {
 	if(!error || !info)
 		return NULL;
@@ -127,31 +126,19 @@ Node* add_elem_after(Tree* info, Node* after, int value, errors_t* error, int le
 		return NULL;
 	}
 
-	//new_node->data = (char*)calloc(sizeof(char), strlen(value) + 1);
-	new_node->data = value;
+	new_node->data = (char*)calloc(sizeof(char), strlen(value) + 1);
 	if(!new_node->data)
 	{
 		free(new_node);
 		*error = NO_MEMORY;
 		return NULL;
 	}
-	//strcpy(new_node->data, value);
+	strcpy(new_node->data, value);
 
 	new_node->level = level;
 	new_node->left = NULL;
 	new_node->right = NULL;
 
-	/*if(!after)
-	{
-		info->root = new_node;
-		new_node->parent = NULL;
-
-		if(is_left)
-			after->left = new_node;
-		else
-			after->right = new_node;
-	}
-	else*/
 	new_node->parent = after;
 
 	++info->size;
@@ -168,13 +155,20 @@ void skip_spaces(int* position, char* buffer)
 void read_str(char* buffer, int* position, char* str)
 {
 	int index = 0;
-	while(buffer[*position] != '}' && buffer[*position] != '{')
+	while(buffer[*position] != '}' && buffer[*position] != '{' && buffer[*position] != '\n' && index < MAX_STR_LEN)
 	{
 		str[index] = buffer[*position];
 		++*position;
 		++index;
 	}
+
 	str[index] = '\0';
+
+	// symbols in buffer which more than MAX_STR_LEN will be skipped
+	while(buffer[*position] != '}' && buffer[*position] != '{')
+	{
+		++*position;
+	}
 }
 
 Node* make_tree_from_base(Tree* info, int level, Node* after, errors_t* error, char* buffer, int* position)
@@ -198,7 +192,7 @@ Node* make_tree_from_base(Tree* info, int level, Node* after, errors_t* error, c
 	{
 		++*position;
 
-		char* str = (char*)malloc(sizeof(char) * 100);
+		char* str = (char*)malloc(sizeof(char) * MAX_STR_LEN);
 		if(!str)
 		{
 			*error = NO_MEMORY;
@@ -207,11 +201,7 @@ Node* make_tree_from_base(Tree* info, int level, Node* after, errors_t* error, c
 
 		read_str(buffer, position, str);
 
-		/*new_node->data = atoi(str);
-		new_node->level = level;
-		new_node->parent = after;*/
-
-		Node* new_node = add_elem_after(info, after, atoi(str), error, level);
+		Node* new_node = add_elem_after(info, after, str, error, level);
 		free(str);
 
 		skip_spaces(position, buffer);
@@ -275,44 +265,10 @@ int read_base(Tree* save_tree, int level, Node* after, errors_t* error)
 		after->left = make_tree_from_base(save_tree, level, after, error, buffer, &position);
 	}
 
-	//free(empty_elem);
-
-	
-	/*if(level == 1)
-	{
-		//create_tree
-		save_tree = (Tree*)malloc(sizeof(Tree));
-		if(!save_tree)
-			return NO_MEMORY;
-		save_tree->root = (Node*)malloc(sizeof(Node));
-		if(!save_tree->root)
-		{
-			free(save_tree);
-			return NO_MEMORY;
-		}
-		save_tree->root->parent = NULL;
-		save_tree->root->left = NULL;
-		save_tree->root->right = NULL;
-		save_tree->root->level = 1;
-
-		save_tree->root->data = atoi((char*)malloc(sizeof(char)*(strlen(buffer) + 1)));*/
-		/*if(!save_tree->root->data)
-		{
-			free(save_tree->root);
-			free(save_tree);
-			return NO_MEMORY;
-		}
-		strcpy(save_tree->root->data, buffer, strlen(buffer));*/
-		/*++save_tree->size;
-	}
-	else
-	{
-
-	}*/
 	return ALL_OK;
 }
 
-
+/*
 Node* add_elem(Tree* info, int value, errors_t* error)
 {
 	if(!info)
@@ -325,7 +281,6 @@ Node* add_elem(Tree* info, int value, errors_t* error)
 
 	if(!root)
 	{
-		printf("aaa\n");
 		info->root = (Node*)malloc(sizeof(Node));
 		printf("%p\n", info->root);
 		if(!info->root)
@@ -399,8 +354,9 @@ Node* add_elem(Tree* info, int value, errors_t* error)
 	}
 
 	return NULL;
-}
+}*/
 
+// (n - 1 ) - amount of ' '
 errors_t print_tree(Node* node, int n)
 {
 	if(!node)
@@ -411,7 +367,7 @@ errors_t print_tree(Node* node, int n)
 
 	printf("\n%*s", n, "{");
 
-	printf("%d", node->data);
+	printf("%s", node->data);
 	if(node->left)
 		print_tree(node->left, n + 3);
 	if(node->right)
@@ -430,7 +386,7 @@ errors_t recursion_print_for_graph(Tree* tree, Node* node, int* index)
 	if(!tree || !node || !index)
 		return BAD_PTR;
 
-    fprintf(tree->graph, " box%d[style=\"filled\", fillcolor=\"white\", label = \"%d\"];\n", *index, node->data);
+    fprintf(tree->graph, " box%d[style=\"filled\", fillcolor=\"white\", label = \"%s\"];\n", *index, node->data);
     
     if(node->left)
     {
@@ -482,19 +438,10 @@ int print_graph(Tree* tree)
     if(tree->graph == NULL)
         return NULL_FILE;
 
-    fprintf(tree->graph, "digraph G{\n node[fontsize=11];\n node[margin=\"0.01\"];\n");
-
-    /*fprintf(tree->graph, " {\n    node[shape=\"plaintext\",style=\"invisible\"];\n    edge [color=\"white\"];\n    ");
-
-    fprintf(Lst->graph, "    \"1\"");
-    for(int index = 2; index < Lst->capacity + 1; index++)
-        fprintf(Lst->graph, "->\"%d\"", index);
-    fprintf(Lst->graph, "\n }\n");*/
+    fprintf(tree->graph, "digraph G{\n node[fontsize=11, margin=\"0.01\"];\n");
 
     fprintf(tree->graph, " edge [color=\"blue\"];\n");
 
-    /*fprintf(Lst->graph, " {rank = same; \"0\";box0;}\n \"box0\"[shape=\"record\", label = \"index|data|next|prev\"];\n");*/
-    
     int index = 0;
     recursion_print_for_graph(tree, tree->root, &index);
 
@@ -507,7 +454,7 @@ int print_graph(Tree* tree)
 
 }
 
-// n - amount of ' '
+// (n - 1) - amount of ' '
 errors_t file_print_tree(FILE* fp, Node* node, int n)
 {
 	if(!node)
@@ -518,7 +465,7 @@ errors_t file_print_tree(FILE* fp, Node* node, int n)
 
 	fprintf(fp, "\n%*s", n, "{");
 
-	fprintf(fp, "%d", node->data);
+	fprintf(fp, "%s", node->data);
 	if(node->left)
 		file_print_tree(fp, node->left, n + 3);
 	if(node->right)

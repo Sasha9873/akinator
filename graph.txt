@@ -1,12 +1,11 @@
 digraph G{
- node[fontsize=11];
- node[margin="0.01"];
+ node[fontsize=11, margin="0.01"];
  edge [color="blue"];
  box0[style="filled", fillcolor="white", label = "5"];
  box1[style="filled", fillcolor="white", label = "1"];
  box2[style="filled", fillcolor="white", label = "9"];
  box3[style="filled", fillcolor="white", label = "7"];
- box4[style="filled", fillcolor="white", label = "6"];
+ box4[style="filled", fillcolor="white", label = "hi"];
  box5[style="filled", fillcolor="white", label = "8"];
  box6[style="filled", fillcolor="white", label = "1000"];
  box3->box4[label = " Yes " color = green fontcolor = green];

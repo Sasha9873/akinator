@@ -7,7 +7,7 @@
 typedef struct node
 {
 	size_t level = 0;
-	int data = 0;
+	char* data = 0;
 	struct node* parent = NULL;
 	struct node* left = NULL;
 	struct node* right = NULL;
@@ -23,6 +23,8 @@ typedef struct tree{
 	FILE* graph = NULL;
 
 } Tree;
+
+static const int MAX_STR_LEN = 100;
 
 static const char *error_names[] = {
     "All is ok",
