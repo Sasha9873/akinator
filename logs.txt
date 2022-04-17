@@ -1,0 +1,25 @@
+Tree
+{
+  size = 7
+
+  Our tree:
+
+  {5
+     {1}
+
+     {9
+        {7
+           {6}
+
+           {8}
+        }
+
+        {1000}
+     }
+  }
+
+  file_with_base = 0x563b4e767690
+  logs = 0x563b4e7674b0
+  graph = 0x563b4e7672d0
+}
+

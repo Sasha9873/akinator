@@ -1,0 +1,18 @@
+digraph G{
+ node[fontsize=11];
+ node[margin="0.01"];
+ edge [color="blue"];
+ box0[style="filled", fillcolor="white", label = "5"];
+ box1[style="filled", fillcolor="white", label = "1"];
+ box2[style="filled", fillcolor="white", label = "9"];
+ box3[style="filled", fillcolor="white", label = "7"];
+ box4[style="filled", fillcolor="white", label = "6"];
+ box5[style="filled", fillcolor="white", label = "8"];
+ box6[style="filled", fillcolor="white", label = "1000"];
+ box3->box4[label = " Yes " color = green fontcolor = green];
+ box3->box5[label = " No " color = red fontcolor = red];
+ box2->box3[label = " Yes " color = green fontcolor = green];
+ box2->box6[label = " No " color = red fontcolor = red];
+ box0->box1[label = " Yes " color = green fontcolor = green];
+ box0->box2[label = " No " color = red fontcolor = red];
+}

@@ -1,5 +1,8 @@
+#pragma once
+
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
 
 typedef struct node
 {
@@ -15,8 +18,23 @@ typedef struct tree{
 	Node* root = NULL;
 	//size_t k_levels = 0;
 	size_t size = 0;
+	FILE* file_with_base = NULL;
+	FILE* logs = NULL;
+	FILE* graph = NULL;
 
 } Tree;
+
+static const char *error_names[] = {
+    "All is ok",
+    "Not enough memory",
+    "Push after an empty element",
+    "Pop zero element",
+    "Pointer to file is NULL",
+    "You have no tree",
+    "You send bad pointer",
+    "You want to add NULL element",
+    "Adding after NULL element"
+};
 
 typedef enum errors{
     ALL_OK           =  0,
@@ -26,4 +44,6 @@ typedef enum errors{
     NULL_FILE        = -4,
     NO_TREE			 = -5,
     BAD_PTR			 = -6,
+    NULL_ELEM 		 = -7,
+    AFTER_NULL_ELEM	 = -8,
 }errors_t;
