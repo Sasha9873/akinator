@@ -24,3 +24,4 @@ Node* find(Node* root, char* value, errors_t* error);
 Tree* create_tree(errors_t* error);
 
 errors_t define_object(Node* root);
+errors_t compare_objects(Node* root);

@@ -15,3 +15,5 @@ typedef struct stack
 struct stack* stack_new(size_t elem_size);
 int stack_push(struct stack *st, const void *elem);
 int stack_pop (struct stack *st, void *elem);
+int stack_top (struct stack *st, void *elem);
+struct stack *stack_delete(struct stack *st);

@@ -10,7 +10,7 @@ int main()
 	fseek(new_tree->file_with_base, 0, SEEK_END);
 
 	size_t size = ftell(new_tree->file_with_base);
-	printf("size1 = %ld\n", size);
+	//printf("size1 = %ld\n", size);
 
 	fseek(new_tree->file_with_base, 0, SEEK_SET);
 
@@ -25,6 +25,8 @@ int main()
 			guess(new_tree->root);
 		else if(enter == 2)
 			define_object(new_tree->root);
+		else if(enter == 3)
+			compare_objects(new_tree->root);
 
 		scanf("%d", &enter);
 	}

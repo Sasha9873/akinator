@@ -1,25 +1,38 @@
+Called from main() at main.cpp(43),
 Tree
 {
-  size = 7
+  size = 13
 
   Our tree:
 
-  {5
-     {1}
+  {animal?
+     {small?
+        {mouse}
 
-     {9
-        {7
-           {hi}
+        {red?
+           {fox Alice}
 
-           {8}
+           {1,5}
+        }
+     }
+
+     {bad?
+        {small?
+           {Karabas Barabas}
+
+           {Rumpelstiltskin}
         }
 
-        {1000}
+        {always eating honey?
+           {Winnie the Pooh}
+
+           {Kolobok}
+        }
      }
   }
 
-  file_with_base = 0x562af98f3690
-  logs = 0x562af98f34b0
-  graph = 0x562af98f32d0
+  file_with_base = 0x55700beda690
+  logs = 0x55700beda4b0
+  graph = 0x55700beda2d0
 }
 

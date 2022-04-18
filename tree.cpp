@@ -81,10 +81,15 @@ Node* find(Node* root, char* value, errors_t* error)
 
 	if(*error = recursion_find(root, value, node))
 	{
+		free(node);
 		return NULL;
 	}
 	
-	return *node;
+	Node* find_node =  *node;
+
+	free(node);
+
+	return find_node;
 }
 
 
@@ -245,9 +250,11 @@ void read_base(Tree* save_tree, int level, Node* after, errors_t* error)
 		int position = 0;
 		save_tree->root = make_tree_from_base(save_tree, level, empty_elem, error, buffer, &position);
 
+		save_tree->root->parent = NULL;
+
 		free(empty_elem);
 
-		printf(" root = %p\n", save_tree->root);
+		//printf(" root = %p\n", save_tree->root);
 	}
 	else
 	{
@@ -255,6 +262,7 @@ void read_base(Tree* save_tree, int level, Node* after, errors_t* error)
 		after->left = make_tree_from_base(save_tree, level, after, error, buffer, &position);
 	}
 
+	free(buffer);
 }
 
 // (n - 1 ) - amount of ' '

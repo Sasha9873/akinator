@@ -3,7 +3,11 @@
   {small?
      {mouse}
 
-     {1,5}
+     {red?
+        {fox Alice}
+
+        {1,5}
+     }
   }
 
   {bad?
@@ -13,6 +17,10 @@
         {Rumpelstiltskin}
      }
 
-     {Kolobok}
+     {always eating honey?
+        {Winnie the Pooh}
+
+        {Kolobok}
+     }
   }
 }

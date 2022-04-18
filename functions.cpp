@@ -43,6 +43,7 @@ char* get_str(int* len)
 	int index = 0;
 	char c;
 	char* str = (char*)malloc(sizeof(char) * (MAX_STR_LEN + 1));
+	//printf("%p\n", str);
 	if(!str)
 		return NULL;
 
@@ -59,8 +60,10 @@ char* get_str(int* len)
 	}
 	str[index] = '\0';
 
-	str = (char*)realloc(str, *len + 2);
+	str = (char*)realloc(str, (index + 2) * sizeof(char));
 	*len = index;
+	//printf("%p\n", str);
+
 	return str;
 }
 
@@ -82,7 +85,7 @@ errors_t add_new_elem_in_base(Node* node)
 	if(!difference)
 		return NO_MEMORY;
 
-	printf("len = %d", len);
+	//printf("len = %d", len);
 	difference[len] = '?';
 	difference[len + 1] = '\0';
 
@@ -135,6 +138,8 @@ void fill_stack(Stack* stk, Node* node)
 		fill_stack(stk, node->parent);
 	}
 
+	return;
+
 }
 
 Stack* make_define_stack(Node* object)
@@ -159,31 +164,50 @@ errors_t print_definition(Stack* stk)
 	if(!new_node)
 		return NO_MEMORY;
 
+	Node* next_node = (Node*)malloc(sizeof(Node));
+	if(!next_node)
+		return NO_MEMORY;
+	
 	printf("It is ");
 
-	while(stk->current_size)
+	while(stk->current_size > 1)
 	{
 		stack_pop(stk, new_node);
 		if(new_node)
 		{
-			//printf("1 %s\n", new_node->data);
 			char* str = (char*)malloc(sizeof(char) * (strlen(new_node->data) + 1));
+			if(!str)
+				return NO_MEMORY;
+
 			memcpy(str, new_node->data, strlen(new_node->data) + 1);
 
 			str[strlen(str) - 1] = '\0';    // delete '?'
 
-			if(stk->current_size == 1)
+			
+
+			stack_top(stk, next_node);  // check next node without delete
+
+			if(!next_node->data || !new_node->right)
+				return BAD_PTR;
+
+			if(strcmp(next_node->data, new_node->right->data) == 0)
+				printf("not ");
+
+			if(stk->current_size == 2)
 				printf("%s and ", str);
 
-			else if(stk->current_size)
+			else if(stk->current_size > 1)
 				printf("%s, ", str);
 
 			else
-				printf("%s\n", str);
+				printf("%s.\n", str);
 
 			free(str);
 		}
 	}
+
+	free(new_node);
+	free(next_node);
 
 	return ALL_OK;
 }
@@ -202,9 +226,93 @@ errors_t define_object(Node* root)
 	{
 		Stack* stk = make_define_stack(object);
 		print_definition(stk);
+		stk = stack_delete(stk);
 	}
 
+	free(value);
+
 	return error;
+}
+
+errors_t print_compare(Stack* stk)
+{
+	if(!stk)
+		return BAD_PTR;
+	
+	Node* new_node = (Node*)malloc(sizeof(Node));
+	if(!new_node)
+		return NO_MEMORY;
+
+	Node* next_node = (Node*)malloc(sizeof(Node));
+	if(!next_node)
+		return NO_MEMORY;
+	
+
+	while(stk->current_size > 2)
+	{
+		stack_pop(stk, new_node);
+		if(new_node)
+		{
+			char* str = (char*)malloc(sizeof(char) * (strlen(new_node->data) + 1));
+			if(!str)
+				return NO_MEMORY;
+
+			memcpy(str, new_node->data, strlen(new_node->data) + 1);
+
+			str[strlen(str) - 1] = '\0';    // delete '?'
+
+
+			stack_top(stk, next_node);  // check next node without delete
+
+			if(!next_node->data || !new_node->right)
+				return BAD_PTR;
+
+			if(strcmp(next_node->data, new_node->right->data) == 0)
+				printf("not ");
+
+			if(stk->current_size == 3)
+				printf("%s and ", str);
+
+			else if(stk->current_size > 1)
+				printf("%s, ", str);
+
+			else
+				printf("%s.\n", str);
+
+			free(str);
+		}
+	}
+
+	printf("but ");
+
+	stack_pop(stk, new_node);
+
+	stack_top(stk, next_node);  // check next node without delete
+
+
+	char* str = (char*)malloc(sizeof(char) * (strlen(new_node->data) + 1));
+	if(!str)
+		return NO_MEMORY;
+
+	memcpy(str, new_node->data, strlen(new_node->data) + 1);
+
+	str[strlen(str) - 1] = '\0';    // delete '?'
+
+
+	if(!next_node->data || !new_node->right)
+		return BAD_PTR;
+
+	if(strcmp(next_node->data, new_node->right->data) == 0)
+		printf("%s is not %s although %s is %s.\n", next_node->data, str, new_node->left->data, str);
+	else
+		printf("%s is %s although %s is not %s.\n", next_node->data, str, new_node->right->data, str);
+
+
+	free(str);
+	free(new_node);
+	free(next_node);
+
+	return ALL_OK;
 }
 
 errors_t compare_objects(Node* root)
@@ -219,8 +327,70 @@ errors_t compare_objects(Node* root)
 	else
 	{
 		Stack* stk = make_define_stack(object);
-		print_definition(stk);
+		if(stk->current_size > 2)
+		{
+			if(!object || !object->parent || !object->parent->left)
+			{
+				//printf("awful0\n");
+				return BAD_PTR;
+			}
+			
+			if(object == object->parent->left)
+			{
+				if(!object->data || !object->parent->right || !object->parent->right->data)
+				{
+					//printf("awful1\n");
+					return BAD_PTR;
+				}
+
+				printf("%s and %s both are ", object->data, object->parent->right->data);
+			}
+			else
+			{
+				if(!object->data || !object->parent->left->data)
+				{
+					//printf("awful2\n");
+					return BAD_PTR;
+				}
+
+				printf("%s and %s both are ", object->data, object->parent->left->data);
+			}
+
+			print_compare(stk);
+		}
+		else
+		{
+			Node* node_difference = (Node*)malloc(sizeof(Node));
+			if(!node_difference)
+				return NO_MEMORY;
+
+			if(!node_difference->data)
+				return BAD_PTR;
+
+			stack_pop(stk, node_difference);
+
+			if(object == object->parent->left)
+			{
+				if(!object || !object->data || !object->parent || !object->right || !object->right->data)
+					return BAD_PTR;
+
+				printf("%s is %s, but %s is not %s.\n", object->data, node_difference->data, object->parent->right->data, node_difference->data);
+			}
+			else
+			{
+				if(!object || !object->data || !object->parent || !object->left || !object->left->data)
+					return BAD_PTR;
+
+				printf("%s is not %s, but %s is %s.\n", object->data, node_difference->data, object->parent->left->data, node_difference->data);
+			}
+
+			free(node_difference);
+		}
+
+		stk = stack_delete(stk);
 	}
+
+	free(value);
 
 	return error;
 }
